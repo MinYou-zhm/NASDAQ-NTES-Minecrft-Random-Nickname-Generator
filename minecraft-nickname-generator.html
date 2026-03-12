@@ -1,0 +1,277 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>网易我的世界随机昵称生成器</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        
+        body {
+            font-family: Arial, sans-serif;
+            overflow: hidden;
+            height: 100vh;
+        }
+        
+        .background {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 300%;
+            height: 300%;
+            background-image: url('tp/tp1.png');
+            background-size: 33.333%;
+            animation: moveBackground 40s linear infinite;
+            z-index: -1;
+        }
+        
+        @keyframes moveBackground {
+            0% {
+                transform: translate(0, 0);
+            }
+            100% {
+                transform: translate(-66.666%, -66.666%);
+            }
+        }
+        
+        .container {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            padding: 20px;
+        }
+        
+        h1 {
+            color: white;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.8);
+            font-size: 2.5em;
+            margin-bottom: 40px;
+            text-align: center;
+        }
+        
+        .result-container {
+            display: flex;
+            align-items: center;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+        
+        .result-input {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 20px;
+            padding: 15px 20px;
+            font-size: 1.2em;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            width: 300px;
+            text-align: center;
+            pointer-events: none;
+            transition: all 0.5s ease;
+        }
+        
+        .result-input.animate {
+            animation: renderAnimation 0.8s ease-in-out;
+        }
+        
+        @keyframes renderAnimation {
+            0% {
+                opacity: 0;
+                transform: scale(0.8);
+            }
+            50% {
+                opacity: 1;
+                transform: scale(1.1);
+            }
+            100% {
+                opacity: 1;
+                transform: scale(1);
+            }
+        }
+        
+        .generate-btn {
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            border-radius: 20px;
+            padding: 15px 30px;
+            font-size: 1.2em;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        
+        .generate-btn:hover {
+            background-color: #45a049;
+        }
+        
+        .generate-btn:active {
+            background-color: #3e8e41;
+        }
+        
+        .settings-container {
+            background-color: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            border-radius: 15px;
+            padding: 20px;
+            margin-bottom: 30px;
+            width: 400px;
+            max-width: 90%;
+        }
+        
+        .settings-container h3 {
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            margin-bottom: 15px;
+            text-align: center;
+        }
+        
+        .setting-item {
+            margin-bottom: 15px;
+        }
+        
+        .setting-item label {
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            margin-right: 10px;
+        }
+        
+        .setting-item select {
+            background-color: rgba(255, 255, 255, 0.2);
+            border: 1px solid rgba(255, 255, 255, 0.3);
+            border-radius: 5px;
+            padding: 8px 12px;
+            color: white;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
+            font-size: 1em;
+        }
+        
+        .setting-item select option {
+            background-color: rgba(0, 0, 0, 0.8);
+            color: white;
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+    <div class="container">
+        <h1>网易我的世界随机昵称生成器</h1>
+        <div class="settings-container">
+            <h3>生成设置</h3>
+            <div class="setting-item">
+                <label for="orderSelect">字符顺序：</label>
+                <select id="orderSelect">
+                    <option value="adj-noun">形容词+名词</option>
+                    <option value="noun-adj">名词+形容词</option>
+                </select>
+            </div>
+            <div class="setting-item">
+                <label for="suffixPosition">数字位置：</label>
+                <select id="suffixPosition">
+                    <option value="none">无数字</option>
+                    <option value="start">数字在开头</option>
+                    <option value="middle">数字在中间</option>
+                    <option value="end">数字在结尾</option>
+                </select>
+            </div>
+        </div>
+        <div class="result-container">
+            <input type="text" class="result-input" id="nicknameResult" placeholder="点击生成按钮获取随机昵称">
+            <button class="generate-btn" id="generateBtn">生成</button>
+        </div>
+    </div>
+    <script>
+        // 网易我的世界随机昵称生成词库
+        const adjectives = [
+            '快乐的', '勇敢的', '聪明的', '可爱的', '善良的',
+            '神秘的', '强大的', '敏捷的', '智慧的', '温柔的',
+            '炫酷的', '梦幻的', '热情的', '冷静的', '幽默的',
+            '帅气的', '美丽的', '机智的', '活泼的', '沉稳的',
+            '霸气的', '优雅的', '灵动的', '飘逸的', '坚定的'
+        ];
+        
+        const nouns = [
+            '矿工', '建筑师', '探险家', '农夫', '战士',
+            '巫师', '猎人', '渔夫', '铁匠', '牧羊人',
+            '艺术家', '工程师', '冒险家', '守护者', '创造者',
+            '旅行者', '收藏家', '发明家', '考古学家', '驯兽师',
+            '龙', '狼', '豹猫', '鹦鹉', '马',
+            '钻石', '黄金', '铁', '红石', '绿宝石',
+            '橡树', '松树', '仙人掌', '蘑菇', '花朵'
+        ];
+        
+        // 生成随机数字的函数
+        function generateRandomChars(length = 3) {
+            const chars = '0123456789';
+            let result = '';
+            for (let i = 0; i < length; i++) {
+                result += chars.charAt(Math.floor(Math.random() * chars.length));
+            }
+            return result;
+        }
+        
+        // 生成随机昵称的函数
+        function generateNickname() {
+            const adjective = adjectives[Math.floor(Math.random() * adjectives.length)];
+            const noun = nouns[Math.floor(Math.random() * nouns.length)];
+            const suffix = generateRandomChars();
+            const order = document.getElementById('orderSelect').value;
+            const suffixPosition = document.getElementById('suffixPosition').value;
+            
+            let baseName;
+            switch(order) {
+                case 'adj-noun':
+                    baseName = adjective + noun;
+                    break;
+                case 'noun-adj':
+                    baseName = noun + adjective;
+                    break;
+                default:
+                    baseName = adjective + noun;
+            }
+            
+            switch(suffixPosition) {
+                case 'none':
+                    return baseName;
+                case 'start':
+                    return suffix + baseName;
+                case 'middle':
+                    const middleIndex = Math.floor(baseName.length / 2);
+                    return baseName.substring(0, middleIndex) + suffix + baseName.substring(middleIndex);
+                case 'end':
+                    return baseName + suffix;
+                default:
+                    return baseName;
+            }
+        }
+        
+        // 绑定生成按钮的点击事件
+        document.getElementById('generateBtn').addEventListener('click', function() {
+            const resultInput = document.getElementById('nicknameResult');
+            // 移除动画类
+            resultInput.classList.remove('animate');
+            // 强制重排
+            void resultInput.offsetWidth;
+            // 生成新昵称
+            const nickname = generateNickname();
+            resultInput.value = nickname;
+            // 添加动画类
+            resultInput.classList.add('animate');
+        });
+        
+        // 页面加载时生成一个初始昵称
+        window.onload = function() {
+            const resultInput = document.getElementById('nicknameResult');
+            const nickname = generateNickname();
+            resultInput.value = nickname;
+            // 添加动画类
+            resultInput.classList.add('animate');
+        };
+    </script>
+</body>
+</html>
